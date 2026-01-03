@@ -28,16 +28,27 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  # Core Flutter SDK
   flutter:
     sdk: flutter
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
+  # iOS-style icons for Cupertino widgets
   cupertino_icons: ^1.0.8
+
+  # UI component library with pre-built widgets
   getwidget: ^7.0.0
+
+  # Calendar and date picker functionality
   calendar_view: ^1.4.0
+
+  # Charting and data visualization library
   fl_chart: ^1.1.1
+
+  # Enhanced snackbar notifications with custom styling
   awesome_snackbar_content: ^0.1.8
+
+  # Firebase initialization and core services
+  firebase_core: ^4.3.0
 
 dev_dependencies:
   flutter_test:
