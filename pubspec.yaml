@@ -50,6 +50,8 @@ dependencies:
   # Firebase initialization and core services
   firebase_core: ^4.3.0
 
+  http: ^1.6.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
