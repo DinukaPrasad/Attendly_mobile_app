@@ -12,4 +12,21 @@ class User {
     required this.phone,
     required this.name,
   });
+
+  String get fullName => '${name.title} ${name.first} ${name.last}';
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      gender: json['gender'],
+      email: json['email'],
+      phone: json['phone'],
+      name: UserName.fromJson(json['name']),
+    );
+  }
+
+  static List<User> fromJsonList(List<dynamic> jsonList) {
+    return jsonList
+        .map((dynamic item) => User.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
 }

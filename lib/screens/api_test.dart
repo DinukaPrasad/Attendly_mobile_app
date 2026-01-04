@@ -10,7 +10,7 @@ class ApiTest extends StatefulWidget {
 }
 
 class _ApiTestState extends State<ApiTest> {
-  List<User> users = [];
+  List<User>? users;
 
   @override
   void initState() {
@@ -22,31 +22,22 @@ class _ApiTestState extends State<ApiTest> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('API Test')),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: users.length,
+      body: users == null
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: users!.length,
               itemBuilder: (context, index) {
-                final user = users[index];
-                final email = user.email;
-                final phone = user.phone;
-                final gender = user.gender;
-                final name =
-                    '${user.name.title} ${user.name.first} ${user.name.last}';
-
+                final user = users![index];
                 return ListTile(
                   leading: Text('${index + 1}'),
-                  title: Text(email),
-                  subtitle: Text('$name\n$phone\n$gender'),
+                  title: Text(user.email),
+                  subtitle: Text(
+                    '${user.name.title} ${user.name.first} ${user.name.last}\n'
+                    '${user.phone}\n${user.gender}',
+                  ),
                 );
               },
             ),
-          ),
-        ],
-      ),
     );
   }
 
