@@ -1,6 +1,6 @@
+import 'package:attendly/models/user.dart';
+import 'package:attendly/services/test_user_api.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class ApiTest extends StatefulWidget {
   const ApiTest({super.key});
@@ -10,16 +10,18 @@ class ApiTest extends StatefulWidget {
 }
 
 class _ApiTestState extends State<ApiTest> {
-  List<dynamic> users = [];
+  List<User> users = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUsers();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('API Test')),
-      floatingActionButton: FloatingActionButton(
-        onPressed: fetchUser,
-        child: const Icon(Icons.send),
-      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -29,18 +31,16 @@ class _ApiTestState extends State<ApiTest> {
               itemCount: users.length,
               itemBuilder: (context, index) {
                 final user = users[index];
-                final email = user['email'];
-                final phone = user['phone'];
-                final name = user['name']['first'];
-                final location = user['location']['street']['number'];
-                final imageUrl = user['picture']['thumbnail'];
+                final email = user.email;
+                final phone = user.phone;
+                final gender = user.gender;
+                final name =
+                    '${user.name.title} ${user.name.first} ${user.name.last}';
 
                 return ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: NetworkImage(imageUrl),
-                  ),
+                  leading: Text('${index + 1}'),
                   title: Text(email),
-                  subtitle: Text('$name, $phone, $location'),
+                  subtitle: Text('$name\n$phone\n$gender'),
                 );
               },
             ),
@@ -50,20 +50,10 @@ class _ApiTestState extends State<ApiTest> {
     );
   }
 
-  void fetchUser() async {
-    print('api test button pressed');
-
-    const url = 'https://randomuser.me/api/?results=20';
-    final uri = Uri.parse(url);
-    final response = await http.get(uri);
-    final body = response.body;
-
-    final json = jsonDecode(body);
-
+  void fetchUsers() async {
+    final fetchedUsers = await TestUserApi.fetchUser();
     setState(() {
-      users = json['results'];
+      users = fetchedUsers;
     });
-
-    print('Fetched ${users.length} users');
   }
 }
