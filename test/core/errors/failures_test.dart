@@ -13,7 +13,7 @@ void main() {
       test('should have default message', () {
         const failure = NetworkFailure();
 
-        expect(failure.message, 'A network error occurred');
+        expect(failure.message, 'Network error. Please check your connection.');
       });
 
       test('should be equatable', () {
@@ -35,10 +35,16 @@ void main() {
         expect(failure.statusCode, 500);
       });
 
-      test('should have default message', () {
-        const failure = ServerFailure();
+      test('should include code', () {
+        const failure = ServerFailure(
+          message: 'Bad request',
+          code: 'bad-request',
+          statusCode: 400,
+        );
 
-        expect(failure.message, 'A server error occurred');
+        expect(failure.message, 'Bad request');
+        expect(failure.code, 'bad-request');
+        expect(failure.statusCode, 400);
       });
     });
 
@@ -52,7 +58,7 @@ void main() {
       test('should have default message', () {
         const failure = CacheFailure();
 
-        expect(failure.message, 'A cache error occurred');
+        expect(failure.message, 'Failed to access local storage');
       });
     });
 
@@ -67,29 +73,74 @@ void main() {
         expect(failure.code, 'invalid-credentials');
       });
 
-      test('should have default message', () {
-        const failure = AuthFailure();
+      test('factory invalidCredentials should return correct failure', () {
+        final failure = AuthFailure.invalidCredentials();
 
-        expect(failure.message, 'An authentication error occurred');
+        expect(failure.message, 'Invalid email or password');
+        expect(failure.code, 'invalid-credential');
+      });
+
+      test('factory userNotFound should return correct failure', () {
+        final failure = AuthFailure.userNotFound();
+
+        expect(failure.message, 'No account found with this email');
+        expect(failure.code, 'user-not-found');
+      });
+
+      test('factory cancelled should return correct failure', () {
+        final failure = AuthFailure.cancelled();
+
+        expect(failure.message, 'Sign-in was cancelled');
+        expect(failure.code, 'cancelled');
       });
     });
 
     group('ValidationFailure', () {
-      test('should include field errors', () {
-        final failure = ValidationFailure(
+      test('should have custom message', () {
+        const failure = ValidationFailure(
           message: 'Validation failed',
-          fieldErrors: {'email': 'Invalid email', 'password': 'Too short'},
+          code: 'validation-error',
         );
 
         expect(failure.message, 'Validation failed');
-        expect(failure.fieldErrors['email'], 'Invalid email');
-        expect(failure.fieldErrors['password'], 'Too short');
+        expect(failure.code, 'validation-error');
       });
 
-      test('should have empty field errors by default', () {
-        const failure = ValidationFailure();
+      test('factory emptyEmail should return correct failure', () {
+        final failure = ValidationFailure.emptyEmail();
 
-        expect(failure.fieldErrors, isEmpty);
+        expect(failure.message, 'Please enter your email');
+        expect(failure.code, 'empty-email');
+      });
+
+      test('factory invalidEmail should return correct failure', () {
+        final failure = ValidationFailure.invalidEmail();
+
+        expect(failure.message, 'Please enter a valid email address');
+        expect(failure.code, 'invalid-email');
+      });
+
+      test('factory emptyField should return correct failure', () {
+        final failure = ValidationFailure.emptyField('username');
+
+        expect(failure.message, 'Please enter username');
+        expect(failure.code, 'empty-field');
+      });
+    });
+
+    group('LocationFailure', () {
+      test('factory permissionDenied should return correct failure', () {
+        final failure = LocationFailure.permissionDenied();
+
+        expect(failure.message, 'Location permission denied');
+        expect(failure.code, 'permission-denied');
+      });
+
+      test('factory serviceDisabled should return correct failure', () {
+        final failure = LocationFailure.serviceDisabled();
+
+        expect(failure.message, 'Location services are disabled');
+        expect(failure.code, 'service-disabled');
       });
     });
 
@@ -99,7 +150,14 @@ void main() {
         final failure = UnknownFailure(originalError: originalError);
 
         expect(failure.originalError, originalError);
-        expect(failure.message, 'An unexpected error occurred');
+        expect(failure.message, 'Something went wrong. Please try again');
+      });
+
+      test('should have default message without original error', () {
+        const failure = UnknownFailure();
+
+        expect(failure.message, 'Something went wrong. Please try again');
+        expect(failure.originalError, isNull);
       });
     });
   });
