@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -11,8 +13,7 @@ class FirebaseAuthService {
 
   FirebaseAuthService({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
     : _auth = auth ?? FirebaseAuth.instance,
-      // Use singleton instance for GoogleSignIn (7.x API)
-      _googleSignIn = googleSignIn ?? GoogleSignIn.instance;
+      _googleSignIn = googleSignIn ?? GoogleSignIn();
 
   /// Stream of authentication state changes
   Stream<User?> authStateChanges() => _auth.authStateChanges();
@@ -53,28 +54,83 @@ class FirebaseAuthService {
     return _auth.sendPasswordResetEmail(email: email);
   }
 
-  // -------- Google Sign-In (7.x API) --------
+  // -------- Google Sign-In --------
 
-  /// Sign in with Google
+  /// Sign in with Google using the standard OAuth flow.
+  ///
+  /// Returns null if the user cancels the sign-in.
+  /// Throws on other errors.
   Future<UserCredential?> signInWithGoogle() async {
-    // Try lightweight (silent) auth first, fall back to interactive
-    GoogleSignInAccount? googleUser = await _googleSignIn
-        .attemptLightweightAuthentication();
+    try {
+      developer.log('Starting Google Sign-In flow...', name: 'GoogleAuth');
 
-    googleUser ??= await _googleSignIn.authenticate();
+      // Step 1: Trigger the Google Sign-In flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
-    final googleAuth = googleUser.authentication;
+      // User cancelled the sign-in
+      if (googleUser == null) {
+        developer.log('User cancelled Google Sign-In', name: 'GoogleAuth');
+        return null;
+      }
 
-    // Request access token via authorization client
-    final clientAuth = await _googleSignIn.authorizationClient
-        .authorizationForScopes(<String>['email', 'profile']);
+      developer.log(
+        'Google account selected: ${googleUser.email}',
+        name: 'GoogleAuth',
+      );
 
-    final credential = GoogleAuthProvider.credential(
-      accessToken: clientAuth?.accessToken,
-      idToken: googleAuth.idToken,
-    );
+      // Step 2: Get the authentication tokens
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
-    return _auth.signInWithCredential(credential);
+      // Check for required tokens
+      if (googleAuth.accessToken == null && googleAuth.idToken == null) {
+        developer.log(
+          'ERROR: Both accessToken and idToken are null',
+          name: 'GoogleAuth',
+        );
+        throw FirebaseAuthException(
+          code: 'missing-tokens',
+          message: 'Failed to get authentication tokens from Google',
+        );
+      }
+
+      developer.log(
+        'Got tokens - accessToken: ${googleAuth.accessToken != null}, idToken: ${googleAuth.idToken != null}',
+        name: 'GoogleAuth',
+      );
+
+      // Step 3: Create Firebase credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Step 4: Sign in to Firebase
+      developer.log('Signing in to Firebase...', name: 'GoogleAuth');
+      final userCredential = await _auth.signInWithCredential(credential);
+
+      developer.log(
+        'Firebase sign-in successful: ${userCredential.user?.email}',
+        name: 'GoogleAuth',
+      );
+
+      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      developer.log(
+        'FirebaseAuthException: ${e.code} - ${e.message}',
+        name: 'GoogleAuth',
+        error: e,
+      );
+      rethrow;
+    } catch (e, stackTrace) {
+      developer.log(
+        'Google Sign-In error: $e',
+        name: 'GoogleAuth',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
   }
 
   // -------- Phone --------

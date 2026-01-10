@@ -56,8 +56,8 @@ dependencies:
   # Firebase email/password auth flows
   firebase_auth: ^6.1.3
 
-  # Google OAuth sign-in integration
-  google_sign_in: ^7.2.0
+  # Google OAuth sign-in integration (using 6.x for simpler Firebase integration)
+  google_sign_in: ^6.2.1
 
   # State management with BLoC pattern
   flutter_bloc: ^9.1.0

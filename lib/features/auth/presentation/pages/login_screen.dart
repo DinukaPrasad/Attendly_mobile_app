@@ -32,11 +32,11 @@ class _LoginScreenState extends State<LoginScreen> {
       create: (_) => AuthDI.loginBloc,
       child: BlocListener<LoginBloc, LoginState>(
         listener: (context, state) {
-          // Handle navigation on success
+          // AuthGate will handle navigation on success via auth state stream
+          // Just show success feedback
           if (state.status == LoginStatus.success) {
-            Navigator.of(
-              context,
-            ).pushNamedAndRemoveUntil(AppRoutes.scan, (_) => false);
+            // AuthGate will automatically redirect - no manual navigation needed
+            // The auth state stream will emit the new user and AuthGate will show ScanScreen
           }
 
           // Handle phone login navigation
