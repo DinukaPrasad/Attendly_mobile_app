@@ -7,9 +7,8 @@ import '../../screens/attendance/history_screen.dart';
 import '../../screens/attendance/scan_screen.dart';
 import '../../features/auth/presentation/pages/login_screen.dart';
 import '../../features/auth/presentation/pages/register_screen.dart';
-import '../../screens/profile/profile_screen.dart';
+import '../../features/profile/presentation/pages/profile_screen.dart';
 import '../../screens/settings/settings_screen.dart';
-import '../../screens/api_test.dart';
 
 /// Application route definitions
 class AppRoutes {
@@ -23,7 +22,6 @@ class AppRoutes {
   static const String history = '/history';
   static const String profile = '/profile';
   static const String settings = '/settings';
-  static const String api_test = '/screens';
 
   /// Route map for MaterialApp
   static Map<String, WidgetBuilder> get routes => {
@@ -34,6 +32,5 @@ class AppRoutes {
     history: (context) => const HistoryScreen(),
     profile: (context) => const ProfileScreen(),
     settings: (context) => const SettingsScreen(),
-    api_test: (context) => const ApiTest(),
   };
 }
