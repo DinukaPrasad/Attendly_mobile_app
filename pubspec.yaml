@@ -71,6 +71,9 @@ dependencies:
   # Secure storage for tokens
   flutter_secure_storage: ^9.2.4
 
+  # Key-value storage for settings
+  shared_preferences: ^2.5.3
+
 dev_dependencies:
   # Flutter's widget and unit testing framework
   flutter_test:

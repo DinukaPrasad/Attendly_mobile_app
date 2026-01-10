@@ -1,9 +1,11 @@
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/attendance/injection.dart';
 import '../../features/auth/injection.dart';
 import '../../features/profile/injection.dart';
+import '../../features/settings/injection.dart';
 
 /// Global service locator instance
 final sl = GetIt.instance;
@@ -17,6 +19,7 @@ Future<void> initDependencies() async {
   _initAuth();
   _initProfile();
   _initAttendance();
+  await _initSettings();
 }
 
 /// Initialize core dependencies (shared across all features)
@@ -30,8 +33,9 @@ Future<void> _initCore() async {
     instanceName: 'baseUrl',
   );
 
-  // Storage service will be registered here
-  // sl.registerLazySingleton<StorageService>(() => StorageServiceImpl());
+  // SharedPreferences for local storage
+  final prefs = await SharedPreferences.getInstance();
+  sl.registerLazySingleton<SharedPreferences>(() => prefs);
 }
 
 /// Initialize auth feature dependencies
@@ -47,6 +51,11 @@ void _initProfile() {
 /// Initialize attendance feature dependencies
 void _initAttendance() {
   registerAttendanceDependencies(sl);
+}
+
+/// Initialize settings feature dependencies
+Future<void> _initSettings() async {
+  await registerSettingsDependencies(sl);
 }
 
 /// Reset all dependencies (useful for testing or logout)

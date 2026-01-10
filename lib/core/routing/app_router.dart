@@ -8,7 +8,7 @@ import '../../features/attendance/presentation/pages/scan_screen.dart';
 import '../../features/auth/presentation/pages/login_screen.dart';
 import '../../features/auth/presentation/pages/register_screen.dart';
 import '../../features/profile/presentation/pages/profile_screen.dart';
-import '../../screens/settings/settings_screen.dart';
+import '../../features/settings/presentation/pages/settings_screen.dart';
 
 /// Application route definitions
 class AppRoutes {
