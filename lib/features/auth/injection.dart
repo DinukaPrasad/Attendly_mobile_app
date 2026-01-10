@@ -1,7 +1,7 @@
 import 'package:get_it/get_it.dart';
 
-import '../../services/auth_service.dart';
 import 'data/datasources/auth_remote_datasource.dart';
+import 'data/datasources/firebase_auth_service.dart';
 import 'data/repositories/auth_repository_impl.dart';
 import 'domain/repositories/auth_repository.dart';
 import 'domain/usecases/sign_in_email_password.dart';
@@ -19,14 +19,14 @@ import 'presentation/bloc/register_bloc.dart';
 /// 4. Use cases
 /// 5. BLoCs (as factories, not singletons)
 void registerAuthDependencies(GetIt sl) {
-  // External services
-  if (!sl.isRegistered<AuthService>()) {
-    sl.registerLazySingleton<AuthService>(() => AuthService());
+  // External services (Firebase Auth wrapper)
+  if (!sl.isRegistered<FirebaseAuthService>()) {
+    sl.registerLazySingleton<FirebaseAuthService>(() => FirebaseAuthService());
   }
 
   // Data sources
   sl.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(sl<AuthService>()),
+    () => AuthRemoteDataSourceImpl(sl<FirebaseAuthService>()),
   );
 
   // Repositories
@@ -78,6 +78,7 @@ class AuthDI {
   /// Gets the auth repository (for checking auth state)
   static AuthRepository get authRepository => _sl<AuthRepository>();
 
-  /// Gets the auth service (for legacy code migration)
-  static AuthService get authService => _sl<AuthService>();
+  /// Gets the Firebase auth service
+  static FirebaseAuthService get firebaseAuthService =>
+      _sl<FirebaseAuthService>();
 }

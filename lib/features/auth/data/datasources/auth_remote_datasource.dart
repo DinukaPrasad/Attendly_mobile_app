@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../core/errors/exceptions.dart';
-import '../../../../services/auth_service.dart';
 import '../models/auth_user_model.dart';
+import 'firebase_auth_service.dart';
 
 /// Remote data source for authentication operations.
 ///
@@ -40,9 +40,9 @@ abstract class AuthRemoteDataSource {
   Stream<AuthUserModel?> authStateChanges();
 }
 
-/// Implementation of [AuthRemoteDataSource] using [AuthService].
+/// Implementation of [AuthRemoteDataSource] using [FirebaseAuthService].
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  final AuthService _authService;
+  final FirebaseAuthService _authService;
 
   AuthRemoteDataSourceImpl(this._authService);
 

@@ -1,18 +1,26 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-class AuthService {
+/// Firebase authentication service wrapper.
+///
+/// This class encapsulates all Firebase Auth and Google Sign-In operations.
+/// It is used by [AuthRemoteDataSourceImpl] to perform authentication.
+class FirebaseAuthService {
   final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
 
-  AuthService({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
+  FirebaseAuthService({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
     : _auth = auth ?? FirebaseAuth.instance,
       // Use singleton instance for GoogleSignIn (7.x API)
       _googleSignIn = googleSignIn ?? GoogleSignIn.instance;
 
+  /// Stream of authentication state changes
   Stream<User?> authStateChanges() => _auth.authStateChanges();
+
+  /// Current authenticated user
   User? get currentUser => _auth.currentUser;
 
+  /// Get ID token for current user
   Future<String?> getIdToken() async {
     final user = _auth.currentUser;
     if (user == null) return null;
@@ -20,6 +28,8 @@ class AuthService {
   }
 
   // -------- Email/Password --------
+
+  /// Sign in with email and password
   Future<UserCredential> signInWithEmailPassword({
     required String email,
     required String password,
@@ -27,6 +37,7 @@ class AuthService {
     return _auth.signInWithEmailAndPassword(email: email, password: password);
   }
 
+  /// Register with email and password
   Future<UserCredential> registerWithEmailPassword({
     required String email,
     required String password,
@@ -37,11 +48,14 @@ class AuthService {
     );
   }
 
+  /// Send password reset email
   Future<void> sendPasswordReset(String email) {
     return _auth.sendPasswordResetEmail(email: email);
   }
 
   // -------- Google Sign-In (7.x API) --------
+
+  /// Sign in with Google
   Future<UserCredential?> signInWithGoogle() async {
     // Try lightweight (silent) auth first, fall back to interactive
     GoogleSignInAccount? googleUser = await _googleSignIn
@@ -64,6 +78,8 @@ class AuthService {
   }
 
   // -------- Phone --------
+
+  /// Send phone verification code
   Future<void> sendPhoneCode({
     required String phoneNumber,
     required void Function(String verificationId) onCodeSent,
@@ -85,6 +101,7 @@ class AuthService {
     );
   }
 
+  /// Verify SMS code
   Future<UserCredential> verifySmsCode({
     required String verificationId,
     required String smsCode,
@@ -97,6 +114,8 @@ class AuthService {
   }
 
   // -------- Logout --------
+
+  /// Sign out from all providers
   Future<void> logout() async {
     await _auth.signOut();
 
