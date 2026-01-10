@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../core/routing/app_router.dart';
-import '../../features/auth/injection.dart';
-import '../../features/auth/presentation/bloc/login_bloc.dart';
-import '../../features/auth/presentation/bloc/login_event.dart';
-import '../../features/auth/presentation/bloc/login_state.dart';
+import '../../../../core/routing/app_router.dart';
+import '../../injection.dart';
+import '../bloc/login_bloc.dart';
+import '../bloc/login_event.dart';
+import '../bloc/login_state.dart';
 
+/// Login screen using BLoC pattern
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 

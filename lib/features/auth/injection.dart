@@ -6,7 +6,9 @@ import 'data/repositories/auth_repository_impl.dart';
 import 'domain/repositories/auth_repository.dart';
 import 'domain/usecases/sign_in_email_password.dart';
 import 'domain/usecases/sign_in_with_google.dart';
+import 'domain/usecases/sign_up_email_password.dart';
 import 'presentation/bloc/login_bloc.dart';
+import 'presentation/bloc/register_bloc.dart';
 
 /// Registers all auth feature dependencies with GetIt.
 ///
@@ -41,10 +43,21 @@ void registerAuthDependencies(GetIt sl) {
     () => SignInWithGoogle(sl<AuthRepository>()),
   );
 
+  sl.registerLazySingleton<SignUpEmailPassword>(
+    () => SignUpEmailPassword(sl<AuthRepository>()),
+  );
+
   // BLoCs - use factory so each screen gets a fresh instance
   sl.registerFactory<LoginBloc>(
     () => LoginBloc(
       signInEmailPassword: sl<SignInEmailPassword>(),
+      signInWithGoogle: sl<SignInWithGoogle>(),
+    ),
+  );
+
+  sl.registerFactory<RegisterBloc>(
+    () => RegisterBloc(
+      signUpEmailPassword: sl<SignUpEmailPassword>(),
       signInWithGoogle: sl<SignInWithGoogle>(),
     ),
   );
@@ -58,6 +71,9 @@ class AuthDI {
 
   /// Creates a new LoginBloc instance
   static LoginBloc get loginBloc => _sl<LoginBloc>();
+
+  /// Creates a new RegisterBloc instance
+  static RegisterBloc get registerBloc => _sl<RegisterBloc>();
 
   /// Gets the auth repository (for checking auth state)
   static AuthRepository get authRepository => _sl<AuthRepository>();
