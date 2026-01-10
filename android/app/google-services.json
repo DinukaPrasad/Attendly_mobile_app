@@ -12,7 +12,20 @@
           "package_name": "com.example.attendly"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "451707349576-liuqgnm3lr4n3p44flnelknfus189n01.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.attendly",
+            "certificate_hash": "c0dabd355b72c0332a9ec75793f0b702447a30b9"
+          }
+        },
+        {
+          "client_id": "451707349576-jrt1ucr88gd6p5lfks57mkqenrl5a5sc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyA3QdDa_12UbygdksMBrr0KgEB1615yE28"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "451707349576-jrt1ucr88gd6p5lfks57mkqenrl5a5sc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

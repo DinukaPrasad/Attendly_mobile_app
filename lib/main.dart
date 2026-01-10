@@ -1,6 +1,17 @@
 import 'package:flutter/material.dart';
-import 'app/app.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() {
+import 'app/app.dart';
+import 'core/di/injection_container.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase first
+  await Firebase.initializeApp();
+
+  // Initialize dependency injection
+  await initDependencies();
+
   runApp(const MyApp());
 }

@@ -2,16 +2,20 @@
 
 import 'package:flutter/material.dart';
 
-import '../screens/attendance/confirm_screen.dart';
-import '../screens/attendance/history_screen.dart';
-import '../screens/attendance/scan_screen.dart';
-import '../screens/auth/login_screen.dart';
-import '../screens/auth/register_screen.dart';
-import '../screens/profile/profile_screen.dart';
-import '../screens/settings/settings_screen.dart';
-import '../screens/api_test.dart';
+import '../../screens/attendance/confirm_screen.dart';
+import '../../screens/attendance/history_screen.dart';
+import '../../screens/attendance/scan_screen.dart';
+import '../../screens/auth/login_screen.dart';
+import '../../screens/auth/register_screen.dart';
+import '../../screens/profile/profile_screen.dart';
+import '../../screens/settings/settings_screen.dart';
+import '../../screens/api_test.dart';
 
+/// Application route definitions
 class AppRoutes {
+  AppRoutes._();
+
+  // Route names
   static const String login = '/login';
   static const String register = '/register';
   static const String scan = '/scan';
@@ -21,6 +25,7 @@ class AppRoutes {
   static const String settings = '/settings';
   static const String api_test = '/screens';
 
+  /// Route map for MaterialApp
   static Map<String, WidgetBuilder> get routes => {
     login: (context) => const LoginScreen(),
     register: (context) => const RegisterScreen(),
