@@ -79,6 +79,12 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  # Mocking library for tests
+  mocktail: ^1.0.4
+
+  # BLoC testing utilities
+  bloc_test: ^10.0.0
+
   # Recommended lint rules (configured in analysis_options.yaml)
   flutter_lints: ^6.0.0
 
