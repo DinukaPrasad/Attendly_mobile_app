@@ -31,6 +31,13 @@ class AuthGate extends StatelessWidget {
         // Check if user is signed in
         final user = snapshot.data;
 
+        // Clear any SnackBars queued from previous screen (prevents login errors showing on QR screen)
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final messenger = ScaffoldMessenger.maybeOf(context);
+          messenger?.clearSnackBars();
+          messenger?.hideCurrentSnackBar();
+        });
+
         if (user != null) {
           // User is signed in - show the main app
           return child;

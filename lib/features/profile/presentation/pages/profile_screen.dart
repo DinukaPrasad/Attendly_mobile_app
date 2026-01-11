@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gap/gap.dart';
 
+import '../../../../widgets/shimmer_loading.dart';
 import '../../injection.dart';
 import '../bloc/profile_bloc.dart';
 import '../bloc/profile_event.dart';
@@ -39,7 +42,7 @@ class _ProfileScreenContent extends StatelessWidget {
       body: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
           if (state.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return _buildLoadingState();
           }
 
           if (state.status == ProfileStatus.failure) {
@@ -51,7 +54,7 @@ class _ProfileScreenContent extends StatelessWidget {
                     state.errorMessage ?? 'An error occurred',
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
+                  Gap(16.h),
                   ElevatedButton(
                     onPressed: () {
                       context.read<ProfileBloc>().add(const LoadStudents());
@@ -83,6 +86,55 @@ class _ProfileScreenContent extends StatelessWidget {
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return ListView.builder(
+      padding: EdgeInsets.all(16.w),
+      itemCount: 5,
+      itemBuilder: (context, index) => Padding(
+        padding: EdgeInsets.only(bottom: 12.h),
+        child: ShimmerLoading(
+          child: Row(
+            children: [
+              Container(
+                width: 48.w,
+                height: 48.w,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              Gap(12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 16.h,
+                      width: 150.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                    ),
+                    Gap(8.h),
+                    Container(
+                      height: 12.h,
+                      width: 100.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/utils/app_snackbar.dart';
+
 import '../../domain/entities/attendance_session.dart';
 import '../bloc/scan_bloc.dart';
 import '../bloc/scan_event.dart';
@@ -22,21 +24,19 @@ class ConfirmScreen extends StatelessWidget {
       body: BlocConsumer<ScanBloc, ScanState>(
         listener: (context, state) {
           if (state is AttendanceSubmitted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Attendance submitted successfully!'),
-                backgroundColor: Colors.green,
-              ),
+            AppSnackbar.showSuccess(
+              context,
+              title: 'Success',
+              message: 'Attendance submitted successfully!',
             );
             // Pop back to scan screen and reset
             Navigator.pop(context);
             context.read<ScanBloc>().add(const ResetScanEvent());
           } else if (state is ScanError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
+            AppSnackbar.showError(
+              context,
+              title: 'Submission Failed',
+              message: state.message,
             );
           }
         },

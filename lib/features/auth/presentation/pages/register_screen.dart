@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/utils/app_snackbar.dart';
 import '../../injection.dart';
 import '../bloc/register_bloc.dart';
 import '../bloc/register_event.dart';
@@ -50,9 +51,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
           // Show error snackbar on failure
           if (state.status == RegisterStatus.failure &&
               state.errorMessage != null) {
-            ScaffoldMessenger.of(
+            AppSnackbar.showError(
               context,
-            ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
+              title: 'Registration Failed',
+              message: state.errorMessage!,
+            );
           }
         },
         child: _RegisterScreenContent(

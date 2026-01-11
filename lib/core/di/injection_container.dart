@@ -6,6 +6,7 @@ import '../../features/attendance/injection.dart';
 import '../../features/auth/injection.dart';
 import '../../features/profile/injection.dart';
 import '../../features/settings/injection.dart';
+import '../theme/theme_controller.dart';
 
 /// Global service locator instance
 final sl = GetIt.instance;
@@ -36,6 +37,11 @@ Future<void> _initCore() async {
   // SharedPreferences for local storage
   final prefs = await SharedPreferences.getInstance();
   sl.registerLazySingleton<SharedPreferences>(() => prefs);
+
+  // Theme controller (single source of truth for theme state)
+  sl.registerLazySingleton<ThemeController>(
+    () => ThemeController(prefs: prefs),
+  );
 }
 
 /// Initialize auth feature dependencies

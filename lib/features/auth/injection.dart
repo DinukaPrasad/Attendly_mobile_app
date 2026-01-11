@@ -6,6 +6,7 @@ import 'data/repositories/auth_repository_impl.dart';
 import 'domain/repositories/auth_repository.dart';
 import 'domain/usecases/sign_in_email_password.dart';
 import 'domain/usecases/sign_in_with_google.dart';
+import 'domain/usecases/sign_out.dart';
 import 'domain/usecases/sign_up_email_password.dart';
 import 'presentation/bloc/login_bloc.dart';
 import 'presentation/bloc/register_bloc.dart';
@@ -47,6 +48,8 @@ void registerAuthDependencies(GetIt sl) {
     () => SignUpEmailPassword(sl<AuthRepository>()),
   );
 
+  sl.registerLazySingleton<SignOut>(() => SignOut(sl<AuthRepository>()));
+
   // BLoCs - use factory so each screen gets a fresh instance
   sl.registerFactory<LoginBloc>(
     () => LoginBloc(
@@ -81,4 +84,7 @@ class AuthDI {
   /// Gets the Firebase auth service
   static FirebaseAuthService get firebaseAuthService =>
       _sl<FirebaseAuthService>();
+
+  /// Gets the sign out use case
+  static SignOut get signOut => _sl<SignOut>();
 }

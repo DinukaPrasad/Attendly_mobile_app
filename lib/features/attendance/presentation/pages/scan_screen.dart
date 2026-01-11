@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/utils/app_snackbar.dart';
 import '../bloc/scan_bloc.dart';
 import '../bloc/scan_event.dart';
 import '../bloc/scan_state.dart';
@@ -54,11 +55,10 @@ class _ScanScreenContentState extends State<_ScanScreenContent> {
               ),
             );
           } else if (state is ScanError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
+            AppSnackbar.showError(
+              context,
+              title: 'Scan Failed',
+              message: state.message,
             );
           }
         },
@@ -129,10 +129,10 @@ class _ScanScreenContentState extends State<_ScanScreenContent> {
                               ScanQrCodeEvent(qrCode: qrCode),
                             );
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Please enter a QR code'),
-                              ),
+                            AppSnackbar.showWarning(
+                              context,
+                              title: 'Warning',
+                              message: 'Please enter a QR code',
                             );
                           }
                         },

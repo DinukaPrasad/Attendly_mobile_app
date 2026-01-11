@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 
 import 'app/app.dart';
 import 'core/di/injection_container.dart';
+import 'core/theme/theme_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,6 +13,9 @@ void main() async {
 
   // Initialize dependency injection
   await initDependencies();
+
+  // Load theme preference before showing the app
+  await sl<ThemeController>().loadThemeMode();
 
   runApp(const MyApp());
 }

@@ -74,6 +74,31 @@ dependencies:
   # Key-value storage for settings
   shared_preferences: ^2.5.3
 
+  # Modern UI Stack
+  # Declarative routing with type-safe navigation
+  go_router: ^15.1.2
+
+  # Responsive sizing for different screen sizes
+  flutter_screenutil: ^5.9.3
+
+  # Declarative animation library
+  flutter_animate: ^4.5.2
+
+  # Cached network images with placeholder support
+  cached_network_image: ^3.4.1
+
+  # Skeleton loading shimmer effect
+  shimmer: ^3.0.0
+
+  # Notification badges
+  badges: ^3.1.2
+
+  # Swipe actions for list items
+  flutter_slidable: ^3.1.2
+
+  # Gap spacing widget (cleaner than SizedBox)
+  gap: ^3.0.1
+
 dev_dependencies:
   # Flutter's widget and unit testing framework
   flutter_test:

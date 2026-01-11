@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_router.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/utils/app_snackbar.dart';
+import '../../../../core/theme/theme_controller.dart';
+import '../../../auth/injection.dart';
 import '../../domain/entities/app_settings.dart';
 import '../bloc/settings_bloc.dart';
 import '../bloc/settings_event.dart';
@@ -30,18 +37,16 @@ class _SettingsScreenContent extends StatelessWidget {
       body: BlocConsumer<SettingsBloc, SettingsState>(
         listener: (context, state) {
           if (state is SettingsError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
+            AppSnackbar.showError(
+              context,
+              title: 'Error',
+              message: state.message,
             );
           } else if (state is SettingsCleared) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Settings cleared'),
-                backgroundColor: Colors.green,
-              ),
+            AppSnackbar.showSuccess(
+              context,
+              title: 'Success',
+              message: 'Settings cleared',
             );
           }
         },
@@ -80,17 +85,12 @@ class _SettingsScreenContent extends StatelessWidget {
     return Stack(
       children: [
         ListView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           children: [
             // Appearance Section
             _SectionHeader(title: 'Appearance'),
-            _ThemeModeCard(
-              currentMode: settings.themeMode,
-              onChanged: (mode) => context.read<SettingsBloc>().add(
-                UpdateThemeModeEvent(themeMode: mode),
-              ),
-            ),
-            const SizedBox(height: 24),
+            const _ThemeModeCard(),
+            Gap(24.h),
 
             // Privacy & Security Section
             _SectionHeader(title: 'Privacy & Security'),
@@ -116,7 +116,7 @@ class _SettingsScreenContent extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            Gap(24.h),
 
             // Notifications Section
             _SectionHeader(title: 'Notifications'),
@@ -131,7 +131,7 @@ class _SettingsScreenContent extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            Gap(24.h),
 
             // About Section
             _SectionHeader(title: 'About'),
@@ -155,7 +155,7 @@ class _SettingsScreenContent extends StatelessWidget {
                 // TODO: Navigate to privacy policy
               },
             ),
-            const SizedBox(height: 24),
+            Gap(24.h),
 
             // Danger Zone
             _SectionHeader(title: 'Danger Zone', isDestructive: true),
@@ -166,6 +166,13 @@ class _SettingsScreenContent extends StatelessWidget {
               iconColor: Colors.red,
               onTap: () => _showClearSettingsDialog(context),
             ),
+            _SettingsTile(
+              icon: Icons.logout,
+              title: 'Logout',
+              subtitle: 'Sign out of your account',
+              iconColor: Colors.red,
+              onTap: () => _showLogoutDialog(context),
+            ),
           ],
         ),
 
@@ -173,11 +180,11 @@ class _SettingsScreenContent extends StatelessWidget {
         if (isSaving)
           Container(
             color: Colors.black26,
-            child: const Center(
+            child: Center(
               child: Card(
                 child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: CircularProgressIndicator(),
+                  padding: EdgeInsets.all(20.w),
+                  child: const CircularProgressIndicator(),
                 ),
               ),
             ),
@@ -191,13 +198,13 @@ class _SettingsScreenContent extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 80, color: Colors.red.shade400),
-          const SizedBox(height: 16),
+          Icon(Icons.error_outline, size: 80.sp, color: Colors.red.shade400),
+          Gap(16.h),
           Text(
             'Failed to load settings',
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          const SizedBox(height: 24),
+          Gap(24.h),
           ElevatedButton(
             onPressed: () {
               context.read<SettingsBloc>().add(const LoadSettingsEvent());
@@ -232,6 +239,50 @@ class _SettingsScreenContent extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text(
+          'Are you sure you want to sign out of your account?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              await _performLogout(context);
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _performLogout(BuildContext context) async {
+    final result = await AuthDI.signOut();
+
+    result.fold(
+      onSuccess: (_) {
+        // Router will automatically redirect to login due to auth state change
+        context.go(AppRoutes.login);
+      },
+      onFailure: (failure) {
+        AppSnackbar.showError(
+          context,
+          title: 'Logout Failed',
+          message: failure.message,
+        );
+      },
     );
   }
 }
@@ -293,58 +344,61 @@ class _SettingsTile extends StatelessWidget {
 }
 
 class _ThemeModeCard extends StatelessWidget {
-  final AppThemeMode currentMode;
-  final ValueChanged<AppThemeMode> onChanged;
-
-  const _ThemeModeCard({required this.currentMode, required this.onChanged});
+  const _ThemeModeCard();
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return ListenableBuilder(
+      listenable: sl<ThemeController>(),
+      builder: (context, _) {
+        final controller = sl<ThemeController>();
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.palette_outlined),
-                const SizedBox(width: 12),
-                Text(
-                  'Theme Mode',
-                  style: Theme.of(context).textTheme.titleMedium,
+                Row(
+                  children: [
+                    const Icon(Icons.palette_outlined),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Theme Mode',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SegmentedButton<ThemeMode>(
+                  segments: const [
+                    ButtonSegment(
+                      value: ThemeMode.system,
+                      label: Text('System'),
+                      icon: Icon(Icons.phone_android),
+                    ),
+                    ButtonSegment(
+                      value: ThemeMode.light,
+                      label: Text('Light'),
+                      icon: Icon(Icons.light_mode),
+                    ),
+                    ButtonSegment(
+                      value: ThemeMode.dark,
+                      label: Text('Dark'),
+                      icon: Icon(Icons.dark_mode),
+                    ),
+                  ],
+                  selected: {controller.themeMode},
+                  onSelectionChanged: (selection) {
+                    if (selection.isNotEmpty) {
+                      controller.setThemeMode(selection.first);
+                    }
+                  },
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            SegmentedButton<AppThemeMode>(
-              segments: const [
-                ButtonSegment(
-                  value: AppThemeMode.system,
-                  label: Text('System'),
-                  icon: Icon(Icons.phone_android),
-                ),
-                ButtonSegment(
-                  value: AppThemeMode.light,
-                  label: Text('Light'),
-                  icon: Icon(Icons.light_mode),
-                ),
-                ButtonSegment(
-                  value: AppThemeMode.dark,
-                  label: Text('Dark'),
-                  icon: Icon(Icons.dark_mode),
-                ),
-              ],
-              selected: {currentMode},
-              onSelectionChanged: (selection) {
-                if (selection.isNotEmpty) {
-                  onChanged(selection.first);
-                }
-              },
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

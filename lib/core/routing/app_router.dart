@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../features/attendance/presentation/pages/confirm_screen.dart';
 import '../../features/attendance/presentation/pages/history_screen.dart';
+import '../../features/attendance/presentation/pages/home_screen.dart';
 import '../../features/attendance/presentation/pages/scan_screen.dart';
 import '../../features/auth/presentation/pages/login_screen.dart';
 import '../../features/auth/presentation/pages/register_screen.dart';
@@ -15,6 +16,7 @@ class AppRoutes {
   AppRoutes._();
 
   // Route names
+  static const String home = '/home';
   static const String login = '/login';
   static const String register = '/register';
   static const String scan = '/scan';
@@ -28,6 +30,7 @@ class AppRoutes {
   /// Note: ConfirmScreen is not included here as it requires a session parameter.
   /// Use Navigator.push to navigate to ConfirmScreen with the session data.
   static Map<String, WidgetBuilder> get routes => {
+    home: (context) => const HomeScreen(),
     login: (context) => const LoginScreen(),
     register: (context) => const RegisterScreen(),
     scan: (context) => const ScanScreen(),

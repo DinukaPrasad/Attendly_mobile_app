@@ -1,21 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../core/routing/app_router.dart';
-import '../core/theme/app_theme.dart';
-import '../features/attendance/presentation/pages/scan_screen.dart';
-import '../features/auth/presentation/widgets/auth_gate.dart';
+import '../core/di/injection_container.dart';
+import '../core/theme/app_dark_theme.dart';
+import '../core/theme/app_light_theme.dart';
+import '../core/theme/theme_controller.dart';
+import 'router/app_router.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Attendly',
-      theme: AppTheme.light,
-      // Use AuthGate as home - it will show Login or ScanScreen based on auth state
-      home: const AuthGate(child: ScanScreen()),
-      routes: AppRoutes.routes,
+    return ScreenUtilInit(
+      designSize: const Size(375, 812), // iPhone X design size
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return ListenableBuilder(
+          listenable: sl<ThemeController>(),
+          builder: (context, _) {
+            final themeController = sl<ThemeController>();
+            return MaterialApp.router(
+              title: 'Attendly',
+              theme: AppLightTheme.build(),
+              darkTheme: AppDarkTheme.build(),
+              themeMode: themeController.themeMode,
+              debugShowCheckedModeBanner: false,
+              routerConfig: AppRouter.router,
+            );
+          },
+        );
+      },
     );
   }
 }

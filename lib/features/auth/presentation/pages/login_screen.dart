@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../../core/routing/app_router.dart';
+import '../../../../app/router/app_router.dart';
+import '../../../../core/utils/app_snackbar.dart';
 import '../../injection.dart';
 import '../bloc/login_bloc.dart';
 import '../bloc/login_event.dart';
@@ -41,17 +45,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
           // Handle phone login navigation
           if (state.status == LoginStatus.navigateToPhone) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Phone sign-in coming soon')),
+            AppSnackbar.showInfo(
+              context,
+              title: 'Coming Soon',
+              message: 'Phone sign-in coming soon',
             );
           }
 
           // Show error snackbar on failure
           if (state.status == LoginStatus.failure &&
               state.errorMessage != null) {
-            ScaffoldMessenger.of(
+            AppSnackbar.showError(
               context,
-            ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
+              title: 'Login Failed',
+              message: state.errorMessage!,
+            );
           }
         },
         child: _LoginScreenContent(
@@ -95,17 +103,17 @@ class _LoginScreenContent extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Login')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: EdgeInsets.all(24.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 40),
+            Gap(40.h),
             Text(
               'Welcome to Attendly',
               style: Theme.of(context).textTheme.headlineSmall,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
+            Gap(32.h),
 
             // Email text field
             TextField(
@@ -118,7 +126,7 @@ class _LoginScreenContent extends StatelessWidget {
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 16),
+            Gap(16.h),
 
             // Password text field
             TextField(
@@ -131,7 +139,7 @@ class _LoginScreenContent extends StatelessWidget {
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 24),
+            Gap(24.h),
 
             // Login button - uses BlocBuilder for loading state
             BlocBuilder<LoginBloc, LoginState>(
@@ -141,19 +149,21 @@ class _LoginScreenContent extends StatelessWidget {
                 return ElevatedButton(
                   onPressed: state.isLoading ? null : () => _login(context),
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
                   ),
                   child: state.isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                      ? SizedBox(
+                          height: 20.h,
+                          width: 20.w,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
                         )
-                      : const Text('Login', style: TextStyle(fontSize: 16)),
+                      : Text('Login', style: TextStyle(fontSize: 16.sp)),
                 );
               },
             ),
-            const SizedBox(height: 16),
+            Gap(16.h),
 
             // Register link
             Row(
@@ -161,8 +171,7 @@ class _LoginScreenContent extends StatelessWidget {
               children: [
                 const Text("Don't have an account? "),
                 GestureDetector(
-                  onTap: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.register),
+                  onTap: () => context.push(AppRoutes.register),
                   child: Text(
                     'Register',
                     style: TextStyle(
@@ -173,14 +182,14 @@ class _LoginScreenContent extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 32),
+            Gap(32.h),
 
             // OR divider
             Row(
               children: [
                 const Expanded(child: Divider()),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
                   child: Text(
                     'OR',
                     style: TextStyle(
@@ -192,7 +201,7 @@ class _LoginScreenContent extends StatelessWidget {
                 const Expanded(child: Divider()),
               ],
             ),
-            const SizedBox(height: 24),
+            Gap(24.h),
 
             // Google sign-in button - uses BlocBuilder for loading state
             BlocBuilder<LoginBloc, LoginState>(
@@ -203,15 +212,15 @@ class _LoginScreenContent extends StatelessWidget {
                   onPressed: state.isLoading
                       ? null
                       : () => _signInWithGoogle(context),
-                  icon: const Icon(Icons.g_mobiledata, size: 24),
+                  icon: Icon(Icons.g_mobiledata, size: 24.sp),
                   label: const Text('Sign in with Google'),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
                   ),
                 );
               },
             ),
-            const SizedBox(height: 12),
+            Gap(12.h),
 
             // Phone sign-in button - uses BlocBuilder for loading state
             BlocBuilder<LoginBloc, LoginState>(
@@ -222,10 +231,10 @@ class _LoginScreenContent extends StatelessWidget {
                   onPressed: state.isLoading
                       ? null
                       : () => _signInWithPhone(context),
-                  icon: const Icon(Icons.phone_outlined, size: 20),
+                  icon: Icon(Icons.phone_outlined, size: 20.sp),
                   label: const Text('Sign in with Phone'),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
                   ),
                 );
               },

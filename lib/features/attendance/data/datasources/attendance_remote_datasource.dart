@@ -69,14 +69,17 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
 
       return [];
     } on SocketException {
-      throw const NetworkException(message: 'No internet connection');
+      throw const NetworkException(
+        message:
+            'Unable to reach server. Please check your internet connection.',
+      );
     } on HttpException catch (e) {
-      throw ServerException(message: e.message);
+      throw ServerException(message: 'Server error: ${e.message}');
     } on FormatException {
-      throw const ServerException(message: 'Invalid response format');
+      throw const ServerException(message: 'Received invalid data from server');
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
-      throw ServerException(message: 'Unexpected error: $e');
+      throw ServerException(message: 'Something went wrong. Please try again.');
     }
   }
 
@@ -98,14 +101,17 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
       return AttendanceSessionModel.fromJson(json);
     } on SocketException {
-      throw const NetworkException(message: 'No internet connection');
+      throw const NetworkException(
+        message:
+            'Unable to reach server. Please check your internet connection.',
+      );
     } on HttpException catch (e) {
-      throw ServerException(message: e.message);
+      throw ServerException(message: 'Server error: ${e.message}');
     } on FormatException {
-      throw const ServerException(message: 'Invalid response format');
+      throw const ServerException(message: 'Received invalid data from server');
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
-      throw ServerException(message: 'Unexpected error: $e');
+      throw ServerException(message: 'Something went wrong. Please try again.');
     }
   }
 
@@ -136,14 +142,18 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
 
       return [];
     } on SocketException {
-      throw const NetworkException(message: 'No internet connection');
+      throw const NetworkException(
+        message: 'Unable to load sessions. Server is unreachable.',
+      );
     } on HttpException catch (e) {
-      throw ServerException(message: e.message);
+      throw ServerException(message: 'Server error: ${e.message}');
     } on FormatException {
-      throw const ServerException(message: 'Invalid response format');
+      throw const ServerException(message: 'Received invalid data from server');
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
-      throw ServerException(message: 'Unexpected error: $e');
+      throw ServerException(
+        message: 'Could not load sessions. Please try again.',
+      );
     }
   }
 
@@ -180,14 +190,20 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
       return AttendanceModel.fromJson(json);
     } on SocketException {
-      throw const NetworkException(message: 'No internet connection');
+      throw const NetworkException(
+        message: 'Could not submit attendance. Server is unreachable.',
+      );
     } on HttpException catch (e) {
-      throw ServerException(message: e.message);
+      throw ServerException(message: 'Server error: ${e.message}');
     } on FormatException {
-      throw const ServerException(message: 'Invalid response format');
+      throw const ServerException(
+        message: 'Received invalid response from server',
+      );
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
-      throw ServerException(message: 'Unexpected error: $e');
+      throw ServerException(
+        message: 'Failed to submit attendance. Please try again.',
+      );
     }
   }
 
@@ -211,14 +227,18 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
       return AttendanceSessionModel.fromJson(json);
     } on SocketException {
-      throw const NetworkException(message: 'No internet connection');
+      throw const NetworkException(
+        message: 'Could not validate QR code. Server is unreachable.',
+      );
     } on HttpException catch (e) {
-      throw ServerException(message: e.message);
+      throw ServerException(message: 'Server error: ${e.message}');
     } on FormatException {
-      throw const ServerException(message: 'Invalid response format');
+      throw const ServerException(
+        message: 'Received invalid response from server',
+      );
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
-      throw ServerException(message: 'Unexpected error: $e');
+      throw ServerException(message: 'QR validation failed. Please try again.');
     }
   }
 }

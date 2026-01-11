@@ -17,9 +17,28 @@ abstract class Failure extends Equatable {
 /// Network-related failures (no internet, timeout, server errors)
 class NetworkFailure extends Failure {
   const NetworkFailure({
-    super.message = 'Network error. Please check your connection.',
+    super.message =
+        'Unable to connect. Please check your internet connection and try again.',
     super.code,
   });
+
+  /// Factory for API unreachable errors
+  factory NetworkFailure.apiUnreachable() => const NetworkFailure(
+    message: 'Server is currently unavailable. Please try again later.',
+    code: 'api-unreachable',
+  );
+
+  /// Factory for timeout errors
+  factory NetworkFailure.timeout() => const NetworkFailure(
+    message: 'Request timed out. Please check your connection and try again.',
+    code: 'timeout',
+  );
+
+  /// Factory for no internet errors
+  factory NetworkFailure.noInternet() => const NetworkFailure(
+    message: 'No internet connection. Please check your network settings.',
+    code: 'no-internet',
+  );
 }
 
 /// Server returned an error response
