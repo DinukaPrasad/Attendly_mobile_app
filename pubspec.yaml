@@ -74,6 +74,9 @@ dependencies:
   # Key-value storage for settings
   shared_preferences: ^2.5.3
 
+  # Biometric authentication (fingerprint, Face ID)
+  local_auth: ^2.2.0
+
   # Modern UI Stack
   # Declarative routing with type-safe navigation
   go_router: ^15.1.2

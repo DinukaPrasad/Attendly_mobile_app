@@ -10,10 +10,10 @@ import '../../../../core/services/permission_manager.dart';
 
 /// Permission gate screen shown on first install after login
 ///
-/// Allows users to enable/deny permissions for:
-/// - Network (informational)
-/// - Location
-/// - Notifications
+/// Requires users to enable permissions for:
+/// - Network (must be connected)
+/// - Location (must be granted)
+/// - Notifications (must be granted, unless not supported on platform)
 class PermissionScreen extends StatefulWidget {
   const PermissionScreen({super.key});
 
@@ -36,6 +36,17 @@ class _PermissionScreenState extends State<PermissionScreen> {
     super.initState();
     _permissionManager = sl<PermissionManager>();
     _checkInitialPermissions();
+  }
+
+  /// Check if all required permissions are granted to allow continuing
+  bool get _canContinue {
+    final networkOk = _networkStatus == PermissionCheckStatus.granted;
+    final locationOk = _locationStatus == PermissionCheckStatus.granted;
+    final notificationOk =
+        _notificationStatus == PermissionCheckStatus.granted ||
+        _notificationStatus == PermissionCheckStatus.notSupported;
+
+    return networkOk && locationOk && notificationOk;
   }
 
   Future<void> _checkInitialPermissions() async {
@@ -242,9 +253,9 @@ class _PermissionScreenState extends State<PermissionScreen> {
 
                     Gap(40.h),
 
-                    // Continue Button
+                    // Continue Button (disabled until all permissions granted)
                     ElevatedButton(
-                      onPressed: _completePermissionGate,
+                      onPressed: _canContinue ? _completePermissionGate : null,
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 16.h),
                         shape: RoundedRectangleBorder(
@@ -260,32 +271,20 @@ class _PermissionScreenState extends State<PermissionScreen> {
                       ),
                     ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.2),
 
-                    Gap(12.h),
-
-                    // Skip Button
-                    TextButton(
-                      onPressed: _completePermissionGate,
-                      child: Text(
-                        'Skip for now',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ).animate().fadeIn(delay: 700.ms),
-
                     Gap(24.h),
 
-                    // Info text
+                    // Info text explaining why permissions are needed
                     Text(
-                      'You can change these permissions later in Settings.',
+                      'Attendly uses your network connection to sync attendance data in real-time. '
+                      'Location access ensures you can only check in when you\'re at the correct venue. '
+                      'Notifications keep you informed about check-in reminders, schedule changes, and important updates so you never miss a session.',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurfaceVariant.withValues(
                           alpha: 0.7,
                         ),
                       ),
                       textAlign: TextAlign.center,
-                    ).animate().fadeIn(delay: 800.ms),
+                    ).animate().fadeIn(delay: 700.ms),
                   ],
                 ),
               ),

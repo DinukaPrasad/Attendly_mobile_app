@@ -176,7 +176,7 @@ void main() {
 
     group('ToggleBiometricEvent', () {
       blocTest<SettingsBloc, SettingsState>(
-        'emits [SettingsSaving, SettingsLoaded] when toggling biometric',
+        'emits [SettingsSaving, SettingsLoaded] when enabling biometric succeeds',
         build: () {
           when(() => mockToggleBiometric(any())).thenAnswer(
             (_) async =>
@@ -189,6 +189,50 @@ void main() {
         expect: () => [
           const SettingsSaving(currentSettings: tSettings),
           const SettingsLoaded(settings: AppSettings(biometricEnabled: true)),
+        ],
+      );
+
+      blocTest<SettingsBloc, SettingsState>(
+        'emits [SettingsSaving, SettingsError] with previousSettings when enabling biometric fails',
+        build: () {
+          when(() => mockToggleBiometric(any())).thenAnswer(
+            (_) async => const Result.failure(
+              AuthFailure(
+                message: 'Authentication was cancelled',
+                code: 'cancelled',
+              ),
+            ),
+          );
+          return buildBloc();
+        },
+        seed: () => const SettingsLoaded(settings: tSettings),
+        act: (bloc) => bloc.add(const ToggleBiometricEvent(enabled: true)),
+        expect: () => [
+          const SettingsSaving(currentSettings: tSettings),
+          const SettingsError(
+            message: 'Authentication was cancelled',
+            previousSettings: tSettings,
+          ),
+        ],
+      );
+
+      blocTest<SettingsBloc, SettingsState>(
+        'emits [SettingsSaving, SettingsLoaded] when disabling biometric',
+        build: () {
+          when(() => mockToggleBiometric(any())).thenAnswer(
+            (_) async =>
+                const Result.success(AppSettings(biometricEnabled: false)),
+          );
+          return buildBloc();
+        },
+        seed: () =>
+            const SettingsLoaded(settings: AppSettings(biometricEnabled: true)),
+        act: (bloc) => bloc.add(const ToggleBiometricEvent(enabled: false)),
+        expect: () => [
+          const SettingsSaving(
+            currentSettings: AppSettings(biometricEnabled: true),
+          ),
+          const SettingsLoaded(settings: AppSettings(biometricEnabled: false)),
         ],
       );
     });

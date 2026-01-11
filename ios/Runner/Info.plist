@@ -61,5 +61,8 @@
 		</array>
 		<key>FirebaseAppDelegateProxyEnabled</key>
 		<false/>
+		<!-- Biometric authentication (Face ID) -->
+		<key>NSFaceIDUsageDescription</key>
+		<string>Attendly uses Face ID to securely authenticate you for quick sign-in.</string>
 	</dict>
 </plist>
