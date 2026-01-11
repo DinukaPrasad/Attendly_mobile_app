@@ -1,4 +1,5 @@
 import 'package:attendly/core/errors/failures.dart';
+import 'package:attendly/core/services/biometric_auth_service.dart';
 import 'package:attendly/core/utils/result.dart';
 import 'package:attendly/features/settings/domain/entities/app_settings.dart';
 import 'package:attendly/features/settings/domain/repositories/settings_repository.dart';
@@ -11,11 +12,15 @@ import 'package:mocktail/mocktail.dart';
 
 class MockSettingsRepository extends Mock implements SettingsRepository {}
 
+class MockBiometricAuthService extends Mock implements BiometricAuthService {}
+
 void main() {
   late MockSettingsRepository mockRepository;
+  late MockBiometricAuthService mockBiometricService;
 
   setUp(() {
     mockRepository = MockSettingsRepository();
+    mockBiometricService = MockBiometricAuthService();
   });
 
   setUpAll(() {
@@ -123,11 +128,14 @@ void main() {
     late ToggleBiometric useCase;
 
     setUp(() {
-      useCase = ToggleBiometric(mockRepository);
+      useCase = ToggleBiometric(mockRepository, mockBiometricService);
     });
 
-    test('should toggle biometric in repository', () async {
+    test('should authenticate and toggle biometric when enabling', () async {
       const updatedSettings = AppSettings(biometricEnabled: true);
+      when(
+        () => mockBiometricService.authenticate(reason: any(named: 'reason')),
+      ).thenAnswer((_) async => const Result.success(true));
       when(
         () => mockRepository.toggleBiometric(true),
       ).thenAnswer((_) async => const Result.success(updatedSettings));
@@ -136,7 +144,26 @@ void main() {
 
       expect(result.isSuccess, isTrue);
       expect(result.valueOrNull?.biometricEnabled, isTrue);
+      verify(
+        () => mockBiometricService.authenticate(reason: any(named: 'reason')),
+      ).called(1);
       verify(() => mockRepository.toggleBiometric(true)).called(1);
+    });
+
+    test('should toggle biometric off without authentication', () async {
+      const updatedSettings = AppSettings(biometricEnabled: false);
+      when(
+        () => mockRepository.toggleBiometric(false),
+      ).thenAnswer((_) async => const Result.success(updatedSettings));
+
+      final result = await useCase(const ToggleSettingParams(enabled: false));
+
+      expect(result.isSuccess, isTrue);
+      expect(result.valueOrNull?.biometricEnabled, isFalse);
+      verifyNever(
+        () => mockBiometricService.authenticate(reason: any(named: 'reason')),
+      );
+      verify(() => mockRepository.toggleBiometric(false)).called(1);
     });
   });
 
