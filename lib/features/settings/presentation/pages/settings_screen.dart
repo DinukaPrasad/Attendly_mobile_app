@@ -274,14 +274,16 @@ class _SettingsScreenContent extends StatelessWidget {
     result.fold(
       onSuccess: (_) {
         // Router will automatically redirect to login due to auth state change
-        context.go(AppRoutes.login);
+        // No need to manually navigate - the _AuthStateNotifier handles this
       },
       onFailure: (failure) {
-        AppSnackbar.showError(
-          context,
-          title: 'Logout Failed',
-          message: failure.message,
-        );
+        if (context.mounted) {
+          AppSnackbar.showError(
+            context,
+            title: 'Logout Failed',
+            message: failure.message,
+          );
+        }
       },
     );
   }

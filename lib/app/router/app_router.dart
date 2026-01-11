@@ -3,12 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/di/injection_container.dart';
+import '../../core/services/permission_manager.dart';
 import '../../features/attendance/presentation/pages/history_screen.dart';
 import '../../features/attendance/presentation/pages/home_screen.dart';
 import '../../features/attendance/presentation/pages/scan_screen.dart';
 import '../../features/auth/injection.dart';
 import '../../features/auth/presentation/pages/login_screen.dart';
 import '../../features/auth/presentation/pages/register_screen.dart';
+import '../../features/permissions/presentation/pages/permission_screen.dart';
 import '../../features/profile/presentation/pages/profile_screen.dart';
 import '../../features/settings/presentation/pages/notifications_screen.dart';
 import '../../features/settings/presentation/pages/settings_screen.dart';
@@ -20,6 +23,7 @@ class AppRoutes {
   static const String home = '/home';
   static const String login = '/login';
   static const String register = '/register';
+  static const String permissions = '/permissions';
   static const String scan = '/scan';
   static const String history = '/history';
   static const String profile = '/profile';
@@ -46,11 +50,12 @@ class AppRouter {
     routes: _routes,
   );
 
-  /// Handle auth-based redirects
+  /// Handle auth-based and permission-based redirects
   static String? _handleRedirect(BuildContext context, GoRouterState state) {
     final isLoggedIn = AuthDI.firebaseAuthService.currentUser != null;
     final isGoingToLogin = state.matchedLocation == AppRoutes.login;
     final isGoingToRegister = state.matchedLocation == AppRoutes.register;
+    final isGoingToPermissions = state.matchedLocation == AppRoutes.permissions;
     final isAuthRoute = isGoingToLogin || isGoingToRegister;
 
     // If not logged in and not going to auth page, redirect to login
@@ -58,9 +63,22 @@ class AppRouter {
       return AppRoutes.login;
     }
 
-    // If logged in and going to auth page, redirect to home
+    // If logged in and going to auth page, check permission gate first
     if (isLoggedIn && isAuthRoute) {
+      // Check if permission gate is completed
+      final permissionManager = sl<PermissionManager>();
+      if (!permissionManager.isPermissionGateDone) {
+        return AppRoutes.permissions;
+      }
       return AppRoutes.home;
+    }
+
+    // If logged in and not going to permissions, check if gate is done
+    if (isLoggedIn && !isGoingToPermissions && !isAuthRoute) {
+      final permissionManager = sl<PermissionManager>();
+      if (!permissionManager.isPermissionGateDone) {
+        return AppRoutes.permissions;
+      }
     }
 
     // No redirect needed
@@ -78,6 +96,11 @@ class AppRouter {
       path: AppRoutes.register,
       name: 'register',
       builder: (context, state) => const RegisterScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.permissions,
+      name: 'permissions',
+      builder: (context, state) => const PermissionScreen(),
     ),
     GoRoute(
       path: AppRoutes.home,

@@ -6,6 +6,7 @@ import '../../features/attendance/injection.dart';
 import '../../features/auth/injection.dart';
 import '../../features/profile/injection.dart';
 import '../../features/settings/injection.dart';
+import '../services/permission_manager.dart';
 import '../theme/theme_controller.dart';
 
 /// Global service locator instance
@@ -41,6 +42,11 @@ Future<void> _initCore() async {
   // Theme controller (single source of truth for theme state)
   sl.registerLazySingleton<ThemeController>(
     () => ThemeController(prefs: prefs),
+  );
+
+  // Permission manager for runtime permissions
+  sl.registerLazySingleton<PermissionManager>(
+    () => PermissionManager(prefs: prefs),
   );
 }
 
