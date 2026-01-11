@@ -7,6 +7,11 @@ import '../../features/auth/injection.dart';
 import '../../features/profile/injection.dart';
 import '../../features/settings/injection.dart';
 import '../services/permission_manager.dart';
+import '../services/session_manager.dart';
+import '../storage/database_service.dart';
+import '../storage/repositories/notification_local_repository.dart';
+import '../storage/repositories/profile_local_repository.dart';
+import '../storage/secure_storage_service.dart';
 import '../theme/theme_controller.dart';
 
 /// Global service locator instance
@@ -18,6 +23,7 @@ final sl = GetIt.instance;
 Future<void> initDependencies() async {
   // Initialize feature modules in order of dependency
   await _initCore();
+  await _initLocalStorage();
   _initAuth();
   _initProfile();
   _initAttendance();
@@ -47,6 +53,35 @@ Future<void> _initCore() async {
   // Permission manager for runtime permissions
   sl.registerLazySingleton<PermissionManager>(
     () => PermissionManager(prefs: prefs),
+  );
+}
+
+/// Initialize local storage (SQLite + Secure Storage)
+Future<void> _initLocalStorage() async {
+  // Initialize SQLite database
+  await DatabaseService.initialize();
+
+  // Secure storage for tokens and secrets
+  sl.registerLazySingleton<SecureStorageService>(
+    () => SecureStorageServiceImpl(),
+  );
+
+  // Local repositories for SQLite data
+  sl.registerLazySingleton<ProfileLocalRepository>(
+    () => ProfileLocalRepositoryImpl(),
+  );
+
+  sl.registerLazySingleton<NotificationLocalRepository>(
+    () => NotificationLocalRepositoryImpl(),
+  );
+
+  // Session manager for login/logout coordination
+  sl.registerLazySingleton<SessionManager>(
+    () => SessionManager(
+      secureStorage: sl<SecureStorageService>(),
+      profileRepo: sl<ProfileLocalRepository>(),
+      notificationRepo: sl<NotificationLocalRepository>(),
+    ),
   );
 }
 
