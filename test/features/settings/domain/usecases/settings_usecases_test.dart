@@ -5,6 +5,7 @@ import 'package:attendly/features/settings/domain/repositories/settings_reposito
 import 'package:attendly/features/settings/domain/usecases/get_settings.dart';
 import 'package:attendly/features/settings/domain/usecases/update_theme_mode.dart';
 import 'package:attendly/features/settings/domain/usecases/toggle_settings.dart';
+import 'mock_biometric_auth_service.dart';
 import 'package:attendly/features/settings/domain/usecases/clear_settings.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -121,13 +122,19 @@ void main() {
 
   group('ToggleBiometric', () {
     late ToggleBiometric useCase;
+    late MockBiometricAuthService mockBiometricAuthService;
 
     setUp(() {
-      useCase = ToggleBiometric(mockRepository);
+      mockBiometricAuthService = MockBiometricAuthService();
+      useCase = ToggleBiometric(mockRepository, mockBiometricAuthService);
     });
 
     test('should toggle biometric in repository', () async {
       const updatedSettings = AppSettings(biometricEnabled: true);
+      when(
+        () =>
+            mockBiometricAuthService.authenticate(reason: any(named: 'reason')),
+      ).thenAnswer((_) async => const Result.success(true));
       when(
         () => mockRepository.toggleBiometric(true),
       ).thenAnswer((_) async => const Result.success(updatedSettings));
@@ -136,6 +143,10 @@ void main() {
 
       expect(result.isSuccess, isTrue);
       expect(result.valueOrNull?.biometricEnabled, isTrue);
+      verify(
+        () =>
+            mockBiometricAuthService.authenticate(reason: any(named: 'reason')),
+      ).called(1);
       verify(() => mockRepository.toggleBiometric(true)).called(1);
     });
   });
