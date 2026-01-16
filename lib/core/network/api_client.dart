@@ -3,11 +3,11 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
-import '../constants/constants.dart';
+import '../constants/app_constants.dart';
 import '../errors/exceptions.dart';
 
 /// HTTP client wrapper with JWT authentication support.
-/// 
+///
 /// Features:
 /// - Automatic JWT token injection
 /// - Request/response logging (debug mode)
@@ -18,7 +18,7 @@ abstract class ApiClient {
   Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> body);
   Future<Map<String, dynamic>> put(String endpoint, Map<String, dynamic> body);
   Future<Map<String, dynamic>> delete(String endpoint);
-  
+
   /// Sets the auth token for subsequent requests
   void setAuthToken(String? token);
 }
@@ -29,11 +29,9 @@ class ApiClientImpl implements ApiClient {
   final String _baseUrl;
   String? _authToken;
 
-  ApiClientImpl({
-    http.Client? client,
-    String? baseUrl,
-  })  : _client = client ?? http.Client(),
-        _baseUrl = baseUrl ?? ApiConstants.baseUrl;
+  ApiClientImpl({http.Client? client, String? baseUrl})
+    : _client = client ?? http.Client(),
+      _baseUrl = baseUrl ?? ApiConstants.baseUrl;
 
   @override
   void setAuthToken(String? token) {
@@ -41,20 +39,17 @@ class ApiClientImpl implements ApiClient {
   }
 
   Map<String, String> get _headers => {
-        'Content-Type': ApiConstants.contentType,
-        'Accept': ApiConstants.contentType,
-        if (_authToken != null)
-          ApiConstants.authorization: '${ApiConstants.bearer} $_authToken',
-      };
+    'Content-Type': ApiConstants.contentType,
+    'Accept': ApiConstants.contentType,
+    if (_authToken != null)
+      ApiConstants.authorization: '${ApiConstants.bearer} $_authToken',
+  };
 
   @override
   Future<Map<String, dynamic>> get(String endpoint) async {
     try {
       final response = await _client
-          .get(
-            Uri.parse('$_baseUrl${ApiConstants.apiVersion}$endpoint'),
-            headers: _headers,
-          )
+          .get(Uri.parse('$_baseUrl$endpoint'), headers: _headers)
           .timeout(ApiConstants.connectionTimeout);
 
       return _handleResponse(response);
@@ -79,7 +74,7 @@ class ApiClientImpl implements ApiClient {
     try {
       final response = await _client
           .post(
-            Uri.parse('$_baseUrl${ApiConstants.apiVersion}$endpoint'),
+            Uri.parse('$_baseUrl$endpoint'),
             headers: _headers,
             body: jsonEncode(body),
           )
@@ -107,7 +102,7 @@ class ApiClientImpl implements ApiClient {
     try {
       final response = await _client
           .put(
-            Uri.parse('$_baseUrl${ApiConstants.apiVersion}$endpoint'),
+            Uri.parse('$_baseUrl$endpoint'),
             headers: _headers,
             body: jsonEncode(body),
           )
@@ -131,10 +126,7 @@ class ApiClientImpl implements ApiClient {
   Future<Map<String, dynamic>> delete(String endpoint) async {
     try {
       final response = await _client
-          .delete(
-            Uri.parse('$_baseUrl${ApiConstants.apiVersion}$endpoint'),
-            headers: _headers,
-          )
+          .delete(Uri.parse('$_baseUrl$endpoint'), headers: _headers)
           .timeout(ApiConstants.connectionTimeout);
 
       return _handleResponse(response);
@@ -160,22 +152,17 @@ class ApiClientImpl implements ApiClient {
       return body;
     }
 
-    final message = body['message'] as String? ??
+    final message =
+        body['message'] as String? ??
         body['error'] as String? ??
         'Request failed';
 
     if (response.statusCode == 401) {
-      throw AuthException(
-        message: message,
-        code: 'unauthorized',
-      );
+      throw AuthException(message: message, code: 'unauthorized');
     }
 
     if (response.statusCode == 403) {
-      throw AuthException(
-        message: message,
-        code: 'forbidden',
-      );
+      throw AuthException(message: message, code: 'forbidden');
     }
 
     if (response.statusCode == 404) {
@@ -194,9 +181,6 @@ class ApiClientImpl implements ApiClient {
       );
     }
 
-    throw ServerException(
-      message: message,
-      statusCode: response.statusCode,
-    );
+    throw ServerException(message: message, statusCode: response.statusCode);
   }
 }

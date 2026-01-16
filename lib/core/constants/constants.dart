@@ -4,8 +4,8 @@ class ApiConstants {
 
   // Base URLs
   static const String baseUrl =
-      'https://api.attendly.app'; // Replace with your API
-  static const String apiVersion = '/v1';
+      'http://10.191.77.198:8080/api/'; // Replace with your API
+  // static const String apiVersion = '/v1';
 
   // Timeouts
   static const Duration connectionTimeout = Duration(seconds: 30);
@@ -61,7 +61,7 @@ class AppConstants {
 /// Prefer using AppRoutes from core/routing/app_router.dart
 class RouteConstants {
   RouteConstants._();
-
+  static const String home = '/home';
   static const String login = '/login';
   static const String register = '/register';
   static const String scan = '/scan';
@@ -69,4 +69,6 @@ class RouteConstants {
   static const String history = '/history';
   static const String profile = '/profile';
   static const String settings = '/settings';
+  static const String notifications = '/notifications';
+  static const String permissions = '/permissions';
 }
