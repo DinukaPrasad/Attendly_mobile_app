@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
+import 'package:http/http.dart' as http;
 
 import '../../../../widgets/shimmer_loading.dart';
 
@@ -24,12 +27,35 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Future<void> _loadNotifications() async {
-    // Simulate loading
-    await Future.delayed(const Duration(seconds: 1));
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      // Fetch notifications from the new endpoint
+      final url = Uri.parse('http://localhost:8080/api/notifications');
+      // Ensure http and jsonDecode are imported
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        _notifications = data.map<_NotificationItem>((item) {
+          return _NotificationItem(
+            id: item['id'].toString(),
+            title: item['title'] ?? '',
+            message: item['message'] ?? '',
+            time: DateTime.tryParse(item['time'] ?? '') ?? DateTime.now(),
+            isRead: item['isRead'] ?? false,
+            type: _parseNotificationType(item['type']),
+          );
+        }).toList();
+      } else {
+        _notifications = _getMockNotifications();
+      }
+    } catch (e) {
+      _notifications = _getMockNotifications();
+    }
     if (mounted) {
       setState(() {
         _isLoading = false;
-        _notifications = _getMockNotifications();
       });
     }
   }
@@ -204,6 +230,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     setState(() {
       _notifications.removeWhere((n) => n.id == notification.id);
     });
+  }
+
+  _NotificationType _parseNotificationType(dynamic type) {
+    switch (type?.toString().toLowerCase()) {
+      case 'success':
+        return _NotificationType.success;
+      case 'warning':
+        return _NotificationType.warning;
+      case 'error':
+        return _NotificationType.error;
+      case 'info':
+      default:
+        return _NotificationType.info;
+    }
   }
 }
 
