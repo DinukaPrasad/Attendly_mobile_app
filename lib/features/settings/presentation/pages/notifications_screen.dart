@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
+import '../../../../core/constants/app_constants.dart';
 
 import '../../../../widgets/shimmer_loading.dart';
 
@@ -27,37 +28,49 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Future<void> _loadNotifications() async {
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
     try {
-      // Fetch notifications from the new endpoint
-      final url = Uri.parse('http://localhost:8080/api/notifications');
-      // Ensure http and jsonDecode are imported
-      final response = await http.get(url);
+      // Use constants for base URL and endpoint
+      final url = Uri.parse(
+        '${ApiConstants.baseUrl}${ApiEndpoints.notifications}',
+      );
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': ApiConstants.contentType,
+          // Add authorization header if needed
+          // ApiConstants.authorization: '${ApiConstants.bearer} your_token',
+        },
+      );
+
+      print('Response body: ${response.body}');
+
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        _notifications = data.map<_NotificationItem>((item) {
-          return _NotificationItem(
-            id: item['id'].toString(),
-            title: item['title'] ?? '',
-            message: item['message'] ?? '',
-            time: DateTime.tryParse(item['time'] ?? '') ?? DateTime.now(),
-            isRead: item['isRead'] ?? false,
-            type: _parseNotificationType(item['type']),
-          );
-        }).toList();
+        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        final List<dynamic> data = jsonResponse['content'] ?? [];
+        _notifications = _mapNotifications(data);
       } else {
+        print('API error: ${response.statusCode}');
         _notifications = _getMockNotifications();
       }
-    } catch (e) {
+    } catch (e, stack) {
+      print('Notification load error: $e\n$stack');
       _notifications = _getMockNotifications();
     }
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  List<_NotificationItem> _mapNotifications(List<dynamic> data) {
+    return data.map<_NotificationItem>((item) {
+      return _NotificationItem(
+        id: item['id'].toString(),
+        title: item['title'] ?? '',
+        message: item['message'] ?? '',
+        time: DateTime.tryParse(item['createdAt'] ?? '') ?? DateTime.now(),
+        isRead: item['read'] ?? false,
+        type: _parseNotificationType(item['type']),
+      );
+    }).toList();
   }
 
   List<_NotificationItem> _getMockNotifications() {

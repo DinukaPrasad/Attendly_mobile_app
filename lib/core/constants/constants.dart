@@ -4,7 +4,7 @@ class ApiConstants {
 
   // Base URLs
   static const String baseUrl =
-      'http://10.191.77.198:8080/api/'; // Replace with your API
+      'http://10.191.77.198:8080/api'; // Replace with your API
   // static const String apiVersion = '/v1';
 
   // Timeouts
@@ -36,12 +36,21 @@ class ValidationConstants {
   static const int maxEmailLength = 254;
 
   /// Email regex pattern
+
   static final RegExp emailRegex = RegExp(
     r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
   );
 
   /// Phone number regex (international format)
   static final RegExp phoneRegex = RegExp(r'^\+?[1-9]\d{1,14}$');
+}
+
+/// API endpoints
+class ApiEndpoints {
+  ApiEndpoints._();
+
+  static const String notifications = '/notifications';
+  // Add more endpoints as needed
 }
 
 /// App-wide constants
