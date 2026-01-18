@@ -1,3 +1,4 @@
+import 'package:attendly/core/constants/app_constants.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,7 +32,7 @@ Future<void> _initCore() async {
 
   // Base URL for API calls
   sl.registerLazySingleton<String>(
-    () => 'https://api.attendly.example.com',
+    () => ApiConstants.baseUrl,
     instanceName: 'baseUrl',
   );
 

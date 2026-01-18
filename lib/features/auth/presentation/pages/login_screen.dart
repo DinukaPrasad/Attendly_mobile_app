@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../app/router/app_router.dart';
+import '../../../../core/routing/app_router.dart';
 import '../../../../core/utils/app_snackbar.dart';
 import '../../injection.dart';
 import '../bloc/login_bloc.dart';

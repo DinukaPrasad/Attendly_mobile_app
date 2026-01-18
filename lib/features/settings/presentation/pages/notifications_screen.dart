@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
+import 'package:http/http.dart' as http;
+import '../../../../core/constants/app_constants.dart';
 
 import '../../../../widgets/shimmer_loading.dart';
 
@@ -24,14 +28,49 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Future<void> _loadNotifications() async {
-    // Simulate loading
-    await Future.delayed(const Duration(seconds: 1));
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
+    setState(() => _isLoading = true);
+    try {
+      // Use constants for base URL and endpoint
+      final url = Uri.parse(
+        '${ApiConstants.baseUrl}${ApiEndpoints.notifications}',
+      );
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': ApiConstants.contentType,
+          // Add authorization header if needed
+          // ApiConstants.authorization: '${ApiConstants.bearer} your_token',
+        },
+      );
+
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        final List<dynamic> data = jsonResponse['content'] ?? [];
+        _notifications = _mapNotifications(data);
+      } else {
+        print('API error: ${response.statusCode}');
         _notifications = _getMockNotifications();
-      });
+      }
+    } catch (e, stack) {
+      print('Notification load error: $e\n$stack');
+      _notifications = _getMockNotifications();
     }
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  List<_NotificationItem> _mapNotifications(List<dynamic> data) {
+    return data.map<_NotificationItem>((item) {
+      return _NotificationItem(
+        id: item['id'].toString(),
+        title: item['title'] ?? '',
+        message: item['message'] ?? '',
+        time: DateTime.tryParse(item['createdAt'] ?? '') ?? DateTime.now(),
+        isRead: item['read'] ?? false,
+        type: _parseNotificationType(item['type']),
+      );
+    }).toList();
   }
 
   List<_NotificationItem> _getMockNotifications() {
@@ -204,6 +243,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     setState(() {
       _notifications.removeWhere((n) => n.id == notification.id);
     });
+  }
+
+  _NotificationType _parseNotificationType(dynamic type) {
+    switch (type?.toString().toLowerCase()) {
+      case 'success':
+        return _NotificationType.success;
+      case 'warning':
+        return _NotificationType.warning;
+      case 'error':
+        return _NotificationType.error;
+      case 'info':
+      default:
+        return _NotificationType.info;
+    }
   }
 }
 

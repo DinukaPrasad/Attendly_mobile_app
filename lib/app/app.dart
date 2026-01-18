@@ -5,7 +5,7 @@ import '../core/di/injection_container.dart';
 import '../core/theme/app_dark_theme.dart';
 import '../core/theme/app_light_theme.dart';
 import '../core/theme/theme_controller.dart';
-import 'router/app_router.dart';
+import '../core/routing/app_router.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
