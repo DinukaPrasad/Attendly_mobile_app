@@ -1,13 +1,12 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import 'package:http/http.dart' as http;
-import '../../../../core/constants/app_constants.dart';
 
 import '../../../../widgets/shimmer_loading.dart';
+
+// ✅ IMPORTANT: update this import path to your real ApiService location
+import '../../../../core/services/api_service.dart';
 
 /// Notifications screen displaying user notifications
 class NotificationsScreen extends StatefulWidget {
@@ -18,6 +17,8 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
+  final ApiService _api = ApiService();
+
   bool _isLoading = true;
   List<_NotificationItem> _notifications = [];
 
@@ -29,34 +30,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Future<void> _loadNotifications() async {
     setState(() => _isLoading = true);
+
     try {
-      // Use constants for base URL and endpoint
-      final url = Uri.parse(
-        '${ApiConstants.baseUrl}${ApiEndpoints.notifications}',
-      );
-      final response = await http.get(
-        url,
-        headers: {
-          'Content-Type': ApiConstants.contentType,
-          // Add authorization header if needed
-          // ApiConstants.authorization: '${ApiConstants.bearer} your_token',
-        },
-      );
-
-      print('Response body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-        final List<dynamic> data = jsonResponse['content'] ?? [];
-        _notifications = _mapNotifications(data);
-      } else {
-        print('API error: ${response.statusCode}');
-        _notifications = _getMockNotifications();
-      }
+      // ✅ Use ApiService (handles Firebase token + headers)
+      final data = await _api.getNotifications();
+      _notifications = _mapNotifications(data);
     } catch (e, stack) {
-      print('Notification load error: $e\n$stack');
+      // fallback (optional)
+      debugPrint('Notification load error: $e\n$stack');
       _notifications = _getMockNotifications();
     }
+
     if (mounted) setState(() => _isLoading = false);
   }
 
@@ -121,7 +105,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         actions: [
           if (_notifications.any((n) => !n.isRead))
             TextButton(
-              onPressed: _markAllAsRead,
+              onPressed: () async => _markAllAsRead(),
               child: const Text('Mark all read'),
             ),
         ],
@@ -193,9 +177,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         itemCount: _notifications.length,
         itemBuilder: (context, index) {
           final notification = _notifications[index];
+
           return _NotificationCard(
                 notification: notification,
-                onTap: () => _handleNotificationTap(notification),
+                onTap: () async => _handleNotificationTap(notification),
                 onDismiss: () => _dismissNotification(notification),
               )
               .animate()
@@ -206,7 +191,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  void _markAllAsRead() {
+  Future<void> _markAllAsRead() async {
+    final unread = _notifications.where((n) => !n.isRead).toList();
+    if (unread.isEmpty) return;
+
+    // ✅ optimistic UI
     setState(() {
       _notifications = _notifications
           .map(
@@ -221,9 +210,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           )
           .toList();
     });
+
+    try {
+      // ✅ backend update
+      for (final n in unread) {
+        await _api.markNotificationRead(n.id, read: true);
+      }
+    } catch (e) {
+      debugPrint('Mark all read failed: $e');
+      // optional: reload from backend to re-sync
+      // await _loadNotifications();
+    }
   }
 
-  void _handleNotificationTap(_NotificationItem notification) {
+  Future<void> _handleNotificationTap(_NotificationItem notification) async {
+    // ✅ optimistic UI
     setState(() {
       final index = _notifications.indexWhere((n) => n.id == notification.id);
       if (index != -1) {
@@ -237,12 +238,23 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         );
       }
     });
+
+    try {
+      // ✅ backend update
+      await _api.markNotificationRead(notification.id, read: true);
+    } catch (e) {
+      debugPrint('Failed to mark notification read: $e');
+      // optional: reload from backend to re-sync
+      // await _loadNotifications();
+    }
   }
 
   void _dismissNotification(_NotificationItem notification) {
     setState(() {
       _notifications.removeWhere((n) => n.id == notification.id);
     });
+
+    // Optional: if you add backend delete endpoint later, call it here.
   }
 
   _NotificationType _parseNotificationType(dynamic type) {
