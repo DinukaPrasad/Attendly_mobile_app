@@ -10,7 +10,7 @@ class ApiService {
   ApiService._internal();
 
   Future<Map<String, String>> _buildHeaders() async {
-    final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    final token = await FirebaseAuth.instance.currentUser?.getIdToken(true);
     if (token == null) {
       throw Exception('No authenticated user for API call');
     }
@@ -27,12 +27,19 @@ class ApiService {
     final url = Uri.parse(
       '${ApiConstants.baseUrl}${ApiEndpoints.notifications}',
     );
+
     final response = await http.get(url, headers: headers);
+
+    // ✅ ADD THIS DEBUG
+    print('GET $url -> ${response.statusCode}');
+    print('Body: ${response.body}');
+
     if (response.statusCode == 200) {
       final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
       return jsonResponse['content'] ?? [];
     }
-    throw Exception('Failed to load notifications');
+
+    throw Exception('Failed to load notifications: ${response.statusCode}');
   }
 
   // Example: Mark notification as read
